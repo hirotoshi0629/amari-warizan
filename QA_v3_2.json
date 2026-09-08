@@ -1,0 +1,10 @@
+{
+  "version": "v3.2 FALSE-NEGATIVE FIX",
+  "js_syntax_ok": true,
+  "correct_number_ambiguous_unit_not_wrong": true,
+  "unreadable_number_not_wrong": true,
+  "confident_wrong_unit_only": true,
+  "erase_buttons_kept": true,
+  "large_boxes_kept": true,
+  "js_error": ""
+}

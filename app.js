@@ -8,26 +8,163 @@ function start(){makeSet();idx=0;score=0;show("quiz");render()}
 function render(){typed={q:"",r:"",value:""};selectedUnits={q:"",r:"",value:""};selectedChoice=null;let q=set[idx];$("#qCount").textContent=`${idx+1} / 10`;$("#catBadge").textContent=q.category;$("#barFill").style.width=`${(idx+1)*10}%`;$("#prompt").textContent=q.prompt;$("#feedback").className="feedback hidden";$("#aiStatus").className="aiStatus hidden";$("#nextBtn").classList.add("hidden");$("#checkBtn").classList.remove("hidden");$("#showAnswerBtn").classList.remove("hidden");$("#options").innerHTML=(q.options||[]).map((x,i)=>`<button class="option" data-v="${i+1}">${x}</button>`).join("");document.querySelectorAll(".option").forEach(b=>b.onclick=()=>{selectedChoice=+b.dataset.v;typed.value=b.dataset.v;document.querySelectorAll(".option").forEach(x=>x.classList.toggle("active",x===b))});answerUI(q);$("#scratchCard").classList.toggle("hidden",!word(q));if(word(q))scratch()}
 function needsUnits(q){return !!(q.unit||q.qUnit||q.rUnit)}
 function unitButtons(unit,key){if(!unit)return"";return `<div class="unitPicker"><button type="button" class="unitBtn" data-unit-key="${key}" data-unit="${unit}">${unit}</button></div>`}
-function answerUI(q){let a=$("#answerArea");if(q.format==="choice"){a.innerHTML='<p class="note">上の答えをタップしてえらびましょう。</p>';return}
- if(mode==="keypad"){
-   if(q.format==="qr"){a.innerHTML=`<div class="answerBox"><span>商</span><div id="dq" class="numDisplay wideDisplay"></div>${unitButtons(q.qUnit,"q")}<span>あまり</span><div id="dr" class="numDisplay wideDisplay"></div>${unitButtons(q.rUnit,"r")}</div>${keypad()}`}
-   else{a.innerHTML=`<div class="answerBox"><span>答え</span><div id="dv" class="numDisplay wideDisplay"></div>${unitButtons(q.unit,"value")}</div>${keypad()}`}
-   document.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>key(b.dataset.k,q));document.querySelectorAll(".unitBtn").forEach(b=>b.onclick=()=>{let k=b.dataset.unitKey;selectedUnits[k]=b.dataset.unit;document.querySelectorAll(`[data-unit-key="${k}"]`).forEach(x=>x.classList.toggle("active",x===b));update()})
- }else{
-   if(q.format==="qr"){a.innerHTML=`<div class="canvasWrap"><div class="handSlot">商${q.qUnit?`（単位も書こう：${q.qUnit}）`:""}<canvas class="handCanvas ${q.qUnit?"answerWide":""}" data-ai-key="q" width="720" height="220"></canvas></div><div class="handSlot">あまり${q.rUnit?`（単位も書こう：${q.rUnit}）`:""}<canvas class="handCanvas ${q.rUnit?"answerWide":""}" data-ai-key="r" width="720" height="220"></canvas></div></div>`}
-   else{a.innerHTML=`<div class="handSlot">答え${q.unit?`（数と単位「${q.unit}」を書こう）`:""}<canvas class="handCanvas ${q.unit?"answerWide":""}" data-ai-key="value" width="900" height="240"></canvas></div>`}
-   document.querySelectorAll(".handCanvas").forEach(draw)
- }}
+function answerUI(q){
+  let a=$("#answerArea");
+  if(q.format==="choice"){a.innerHTML='<p class="note">上の答えをタップしてえらびましょう。</p>';return}
+  if(mode==="keypad"){
+    if(q.format==="qr"){a.innerHTML=`<div class="answerBox"><span>商</span><div id="dq" class="numDisplay wideDisplay"></div>${unitButtons(q.qUnit,"q")}<span>あまり</span><div id="dr" class="numDisplay wideDisplay"></div>${unitButtons(q.rUnit,"r")}</div>${keypad()}`}
+    else{a.innerHTML=`<div class="answerBox"><span>答え</span><div id="dv" class="numDisplay wideDisplay"></div>${unitButtons(q.unit,"value")}</div>${keypad()}`}
+    document.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>key(b.dataset.k,q));
+    document.querySelectorAll(".unitBtn").forEach(b=>b.onclick=()=>{let k=b.dataset.unitKey;selectedUnits[k]=b.dataset.unit;document.querySelectorAll(`[data-unit-key="${k}"]`).forEach(x=>x.classList.toggle("active",x===b));update()})
+  }else{
+    if(q.format==="qr"){
+      a.innerHTML=`<div class="canvasWrap">
+        ${handGroup("q","商",q.qUnit)}
+        ${handGroup("r","あまり",q.rUnit)}
+      </div><div class="handHint">数字はマスいっぱいに、大きく1文字ずつ書くとAIが読みやすくなります。</div>`
+    }else{
+      a.innerHTML=`<div class="canvasWrap">${handGroup("value","答え",q.unit)}</div>
+      <div class="handHint">数字はマスいっぱいに、大きく書いてね。単位がある問題は、単位のマスにも書こう。</div>`
+    }
+    document.querySelectorAll(".handCanvas").forEach(draw);
+    document.querySelectorAll(".eraseInk").forEach(b=>b.onclick=()=>{
+      const c=document.querySelector(`canvas[data-ai-key="${b.dataset.clearKey}"][data-part="${b.dataset.clearPart}"]`);
+      if(c)c.getContext("2d").clearRect(0,0,c.width,c.height);
+    });
+  }
+}
+function handGroup(key,label,unit){
+  if(unit){
+    return `<div class="handAnswerGroup">
+      <div class="handSlot"><b>${label}（数字）</b><canvas class="handCanvas numberCanvas" data-ai-key="${key}" data-part="number" width="920" height="720"></canvas><button type="button" class="eraseInk" data-clear-key="${key}" data-clear-part="number">消す</button></div>
+      <div class="handSlot"><b>単位</b><canvas class="handCanvas unitCanvas" data-ai-key="${key}" data-part="unit" width="600" height="720"></canvas><button type="button" class="eraseInk" data-clear-key="${key}" data-clear-part="unit">消す</button></div>
+    </div>`
+  }
+  return `<div class="handSlot"><b>${label}</b><canvas class="handCanvas numberCanvas" data-ai-key="${key}" data-part="number" width="920" height="720"></canvas><button type="button" class="eraseInk" data-clear-key="${key}" data-clear-part="number">消す</button></div>`
+}
 function keypad(){return `<div class="keypad">${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button data-k="${n}">${n}</button>`).join("")}<button data-k="C">C</button><button data-k="B">←</button></div>`}
 function key(k,q){let f=q.format==="qr"?(typed.q===""?"q":"r"):"value";if(k==="C")typed={q:"",r:"",value:""};else if(k==="B")typed[f]=typed[f].slice(0,-1);else if(q.format==="qr"){if(typed.q==="")typed.q=k;else typed.r=(typed.r+k).slice(0,2)}else typed[f]=(typed[f]+k).slice(0,2);update()}
 function update(){if($("#dq"))$("#dq").textContent=typed.q+(selectedUnits.q?" "+selectedUnits.q:"");if($("#dr"))$("#dr").textContent=typed.r+(selectedUnits.r?" "+selectedUnits.r:"");if($("#dv"))$("#dv").textContent=typed.value+(selectedUnits.value?" "+selectedUnits.value:"")}
 function draw(c){let x=c.getContext("2d"),on=false;x.lineWidth=11;x.lineCap="round";x.strokeStyle="#173229";let p=e=>{let r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};c.onpointerdown=e=>{on=true;c.setPointerCapture?.(e.pointerId);let[a,b]=p(e);x.beginPath();x.moveTo(a,b)};c.onpointermove=e=>{if(!on)return;let[a,b]=p(e);x.lineTo(a,b);x.stroke()};c.onpointerup=()=>on=false;c.onpointercancel=()=>on=false}
 function scratch(){let c=$("#scratchCanvas"),x=c.getContext("2d");x.clearRect(0,0,c.width,c.height);draw(c);$("#clearScratch").onclick=()=>x.clearRect(0,0,c.width,c.height)}
 function at(q){if(q.format==="qr")return `${q.answer.q}${q.qUnit||""} あまり ${q.answer.r}${q.rUnit||""}`;return `${q.answer.value}${q.unit||""}`}
-function normalizeUnitText(t){return (t||"").replace(/\s/g,"").replace(/[個箇ケ]/g,"こ").replace(/枚/g,"まい").replace(/袋/g,"ふくろ").replace(/艘/g,"そう").replace(/センチメートル|センチ/g,"cm").replace(/[Ｃｃ][Ｍｍ]/g,"cm").replace(/臺/g,"台")}
+function normalizeUnitText(t){return (t||"").replace(/\s/g,"").replace(/[個箇ケ]/g,"こ").replace(/枚/g,"まい").replace(/袋/g,"ふくろ").replace(/艘/g,"そう").replace(/センチメートル|センチ/g,"cm").replace(/[Ｃｃ][Ｍｍ]/g,"cm").replace(/臺/g,"台").replace(/[マま][イぃ]/g,"まい").replace(/本ほん/g,"本")}
 function parseAiText(text,unit){let t=normalizeUnitText(text);let m=t.match(/[0-9０-９]+/);let num=m?Number(m[0].replace(/[０-９]/g,ch=>"０１２３４５６７８９".indexOf(ch))):NaN;let hasUnit=!unit||t.includes(normalizeUnitText(unit));return{num,hasUnit,text:t}}
-async function aiReadCanvas(canvas){if(!window.Tesseract)throw new Error("AI読取ライブラリを読み込めません");const r=await Tesseract.recognize(canvas,"jpn+eng",{logger:m=>{if(m.status==="recognizing text")$("#aiStatus").textContent=`🤖 AIが答えを読んでいます… ${Math.round((m.progress||0)*100)}%`}});return r.data}
-async function aiCheck(q){$("#checkBtn").disabled=true;$("#aiStatus").className="aiStatus";$("#aiStatus").textContent="🤖 AIが答えを読んでいます…";try{let results={};for(const c of document.querySelectorAll(".handCanvas")){let k=c.dataset.aiKey,unit=k==="q"?q.qUnit:k==="r"?q.rUnit:q.unit;let data=await aiReadCanvas(c);results[k]={...parseAiText(data.text,unit),confidence:data.confidence||0}}let ok=false;if(q.format==="qr"){ok=results.q?.num===q.answer.q&&results.r?.num===q.answer.r&&results.q?.hasUnit&&results.r?.hasUnit}else ok=results.value?.num===q.answer.value&&results.value?.hasUnit;if(Object.values(results).some(x=>!Number.isFinite(x.num)||x.confidence<25)){let f=$("#feedback");f.className="feedback answer";f.innerHTML="🤖 AIが文字をはっきり読めませんでした。もう少し大きく、ゆっくり書いて、もう一度「こたえあわせ」を押してね。";return}fb(q,ok)}catch(e){let f=$("#feedback");f.className="feedback answer";f.innerHTML="🤖 AI判定を始められませんでした。通信を確認して、もう一度ためしてください。"}finally{$("#aiStatus").className="aiStatus hidden";$("#checkBtn").disabled=false}}
+function preparedCanvas(src,scale=2,threshold=205){
+  const c=document.createElement("canvas"),w=src.width*scale,h=src.height*scale;c.width=w;c.height=h;
+  const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(src,0,0,w,h);
+  const im=x.getImageData(0,0,w,h),d=im.data;
+  for(let i=0;i<d.length;i+=4){
+    const g=(d[i]+d[i+1]+d[i+2])/3, v=g<threshold?0:255;
+    d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;
+  }
+  x.putImageData(im,0,0);return c;
+}
+async function ocrOnce(canvas,lang,params){
+  const r=await Tesseract.recognize(canvas,lang,{...params,logger:m=>{if(m.status==="recognizing text")$("#aiStatus").textContent=`🤖 AIが答えを読んでいます… ${Math.round((m.progress||0)*100)}%`}});
+  return {text:r.data.text||"",confidence:r.data.confidence||0};
+}
+async function aiReadNumber(canvas){
+  if(!window.Tesseract)throw new Error("AI読取ライブラリを読み込めません");
+  const tests=[
+    [preparedCanvas(canvas,2,190),"eng",{tessedit_char_whitelist:"0123456789",tessedit_pageseg_mode:"10"}],
+    [preparedCanvas(canvas,2,215),"eng",{tessedit_char_whitelist:"0123456789",tessedit_pageseg_mode:"10"}],
+    [preparedCanvas(canvas,3,205),"eng",{tessedit_char_whitelist:"0123456789",tessedit_pageseg_mode:"7"}]
+  ];
+  let best={text:"",confidence:0};
+  for(const [c,l,p] of tests){const r=await ocrOnce(c,l,p);if(r.confidence>best.confidence)best=r}
+  return best;
+}
+async function aiReadUnit(canvas){
+  if(!window.Tesseract)throw new Error("AI読取ライブラリを読み込めません");
+  const a=await ocrOnce(preparedCanvas(canvas,2,205),"jpn+eng",{tessedit_pageseg_mode:"10"});
+  const b=await ocrOnce(preparedCanvas(canvas,2,220),"jpn+eng",{tessedit_pageseg_mode:"7"});
+  return a.confidence>=b.confidence?a:b;
+}
+function digitValue(text){
+  const m=(text||"").replace(/[０-９]/g,ch=>"０１２３４５６７８９".indexOf(ch)).match(/\d+/);
+  return m?Number(m[0]):NaN;
+}
+async function aiCheck(q){
+  $("#checkBtn").disabled=true;
+  $("#aiStatus").className="aiStatus";
+  $("#aiStatus").textContent="🤖 AIが答えを読んでいます…";
+  try{
+    let results={};
+    for(const key of (q.format==="qr"?["q","r"]:["value"])){
+      const numCanvas=document.querySelector(`canvas[data-ai-key="${key}"][data-part="number"]`);
+      const unitCanvas=document.querySelector(`canvas[data-ai-key="${key}"][data-part="unit"]`);
+      const nr=await aiReadNumber(numCanvas);
+      const expectedUnit=key==="q"?q.qUnit:key==="r"?q.rUnit:q.unit;
+
+      let ur={text:"",confidence:0};
+      if(expectedUnit&&unitCanvas) ur=await aiReadUnit(unitCanvas);
+
+      const readUnit=normalizeUnitText(ur.text);
+      const expectedNorm=normalizeUnitText(expectedUnit||"");
+      const unitExact=!expectedUnit || readUnit.includes(expectedNorm);
+      const unitUnreadable=!!expectedUnit && (ur.confidence<35 || !readUnit);
+      const unitConfidentWrong=!!expectedUnit && !unitExact && ur.confidence>=55 && readUnit.length>0;
+
+      results[key]={
+        num:digitValue(nr.text),
+        numConf:nr.confidence,
+        rawNum:nr.text,
+        rawUnit:ur.text,
+        unitExact,
+        unitUnreadable,
+        unitConfidentWrong
+      };
+    }
+
+    // 数字が読めない場合は「不正解」にしない。
+    const numberUnreadable=Object.values(results).some(x=>!Number.isFinite(x.num)||x.numConf<18);
+    if(numberUnreadable){
+      const f=$("#feedback");
+      f.className="feedback answer";
+      f.innerHTML="🤖 数字をはっきり読めませんでした。<b>「消す」</b>で書き直して、数字をマスいっぱいに大きく書いてみてね。<br><small>AIが読めないだけなので、不正解にはしていません。</small>";
+      return;
+    }
+
+    const numberCorrect=q.format==="qr"
+      ? results.q.num===q.answer.q && results.r.num===q.answer.r
+      : results.value.num===q.answer.value;
+
+    // 単位が「明確に別の単位」と読めた場合だけ単位不正解。
+    const confidentUnitWrong=Object.values(results).some(x=>x.unitConfidentWrong);
+
+    // 単位OCRが曖昧なら、正しい数字を誤答にしない。単位だけ書き直し案内。
+    const unitAmbiguous=Object.values(results).some(x=>x.unitUnreadable && !x.unitExact);
+
+    if(numberCorrect && unitAmbiguous && !confidentUnitWrong){
+      const f=$("#feedback");
+      f.className="feedback answer";
+      f.innerHTML="🤖 数字は正しく読めました。単位だけAIがはっきり読めませんでした。<b>単位のマスだけ</b>書き直して、もう一度「こたえあわせ」を押してね。<br><small>数字は正解なので、不正解にはしていません。</small>";
+      return;
+    }
+
+    if(numberCorrect && !confidentUnitWrong){
+      fb(q,true);
+      return;
+    }
+
+    if(!numberCorrect){
+      fb(q,false);
+      return;
+    }
+
+    // 数字は合っているが、単位を高い確信度で別物と読んだ場合のみ不正解。
+    fb(q,false);
+
+  }catch(e){
+    const f=$("#feedback");
+    f.className="feedback answer";
+    f.innerHTML="🤖 AI判定を始められませんでした。通信を確認して、もう一度ためしてください。";
+  }finally{
+    $("#aiStatus").className="aiStatus hidden";
+    $("#checkBtn").disabled=false;
+  }
+}
 function check(){let q=set[idx];if(q.format==="choice"){if(!selectedChoice)return alert("答えをえらんでください。");return fb(q,selectedChoice===q.answer.value)}if(mode==="hand")return aiCheck(q);if(needsUnits(q)){if(q.format==="qr"&&((q.qUnit&&!selectedUnits.q)||(q.rUnit&&!selectedUnits.r)))return alert("単位まで答えましょう。");if(q.format!=="qr"&&q.unit&&!selectedUnits.value)return alert("単位まで答えましょう。")}let ok=q.format==="qr"?+typed.q===q.answer.q&&+typed.r===q.answer.r:+typed.value===q.answer.value;fb(q,ok)}
 function fb(q,ok){if(ok)score++;let f=$("#feedback");f.className="feedback "+(ok?"ok":"ng");f.innerHTML=(ok?"⭕ せいかい！<br>":"△ ちがいます。答え：<b>"+at(q)+"</b><br>")+q.explanation;$("#checkBtn").classList.add("hidden");$("#showAnswerBtn").classList.add("hidden");$("#nextBtn").classList.remove("hidden")}
 function showAnswer(){let q=set[idx],f=$("#feedback");f.className="feedback answer";f.innerHTML=`💡 答え：<b>${at(q)}</b><br>${q.explanation}`;$("#checkBtn").classList.add("hidden");$("#showAnswerBtn").classList.add("hidden");$("#nextBtn").classList.remove("hidden")}

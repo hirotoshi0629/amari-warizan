@@ -1,0 +1,10 @@
+{
+  "version": "v3.3 TALLER HANDWRITING BOXES",
+  "desktop_number_height": "240px",
+  "desktop_unit_height": "240px",
+  "tablet_height": "220px",
+  "small_screen_height": "200px",
+  "v3.2_ai_false_negative_fix_kept": true,
+  "erase_buttons_kept": true,
+  "js_syntax_ok": true
+}

@@ -1,1 +1,38 @@
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:"Yu Gothic",system-ui,sans-serif;background:linear-gradient(#f7fbf8,#fff8e7);color:#173229}.top{height:54px;position:sticky;top:0;z-index:20;background:#fffffff2;display:flex;justify-content:space-between;align-items:center;padding:7px max(12px,calc((100vw - 1180px)/2));border-bottom:1px solid #dbe8e1}.view{max-width:1180px;margin:auto;padding:14px}.hidden{display:none!important}.card,.questionPanel,.scratchCard{background:#fff;border-radius:20px;padding:18px;box-shadow:0 7px 22px #153f2b12}.homeGrid{display:grid;grid-template-columns:.8fr 1.2fr;gap:14px}.introCard h1{font-size:36px;margin:6px 0}.eyebrow{color:#0f8b6d;font-weight:900}.miniPuzzle{height:190px;border-radius:15px;background:linear-gradient(135deg,#9ddcff,#ffdc88)}.compactCard{padding:16px;margin-bottom:12px}.compactCard h2{margin:0 0 8px}.groupGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}button{font:inherit;font-weight:800;border:0;border-radius:13px;padding:9px 13px;min-height:44px;cursor:pointer}.groupBtn,.modeBtn{background:#f1f6f3;border:2px solid transparent;line-height:1.25}.groupBtn.selected,.modeBtn.selected{border-color:#0f8b6d;background:#eaf8f2}.groupBtn small{font-size:11px}.modeRow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.primary{background:#0f8b6d;color:#fff}.secondary{background:#e7f5ef;color:#0b6e57}.ghost{background:#fff;border:2px solid #d6e4dd}.warnBtn{background:#fff0b8;color:#705200}.bigBtn{width:100%;font-size:18px}.note{color:#65766f;font-size:13px}.quizView{height:calc(100vh - 54px);overflow:hidden;padding-top:8px}.quizTop{height:46px;background:#fff;border-radius:14px;padding:8px 12px;margin-bottom:8px}.badge{float:right;background:#e6f5ef;padding:3px 9px;border-radius:999px;font-size:12px}.bar{height:6px;background:#e8edea;border-radius:9px;overflow:hidden;margin-top:6px}.bar div{height:100%;background:#0f8b6d}.quizLayout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:10px;height:calc(100vh - 116px);align-items:stretch}.questionPanel{height:100%;display:flex;flex-direction:column;overflow:hidden;padding:16px}.prompt{font-size:clamp(19px,2.2vw,27px);font-weight:900;line-height:1.42;white-space:pre-wrap;margin-bottom:8px;max-height:30vh;overflow:auto}.options{display:grid;gap:5px;margin-bottom:6px;max-height:26vh;overflow:auto}.option{background:#fff;border:2px solid #dce8e2;text-align:left;min-height:38px;padding:7px 10px}.option.active{background:#eaf8f2;border-color:#0f8b6d}.answerBox{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:5px 0}.numDisplay{min-width:135px;min-height:54px;border:3px solid #b7d5c7;border-radius:13px;font-size:27px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 12px}.wideDisplay{min-width:190px}.unitPicker{display:flex;gap:5px;flex-wrap:wrap}.unitBtn{background:#f5f7f6;border:2px solid #cbdad3;min-height:38px;padding:6px 11px}.unitBtn.active{border-color:#0f8b6d;background:#eaf8f2}.keypad{display:grid;grid-template-columns:repeat(6,58px);gap:5px;justify-content:flex-start;margin-top:5px}.keypad button{min-height:42px;font-size:19px;background:#edf5f1}.canvasWrap{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}.handSlot{display:flex;flex-direction:column;gap:3px;font-weight:800}.handCanvas{width:250px;height:110px;border:3px dashed #8db8a5;border-radius:14px;touch-action:none;background:#fff}.handCanvas.answerWide{width:360px}.scratchCard{height:100%;padding:10px;display:flex;flex-direction:column}.scratchHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}.scratchCard canvas{width:100%;height:100%;min-height:0;background:#fffdf5;border:3px dashed #9cbcac;border-radius:14px;touch-action:none}.tinyBtn{min-height:34px;padding:4px 9px;background:#eef4f1}.feedback,.aiStatus{margin-top:5px;padding:8px 10px;border-radius:12px;font-weight:800;font-size:14px}.feedback.ok{background:#e7f8ee}.feedback.ng{background:#fff0ed}.feedback.answer{background:#fff7d5}.aiStatus{background:#eef4ff}.actionRow{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:7px}.jigsaw{max-width:550px;aspect-ratio:1;margin:16px auto;display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);overflow:hidden;border-radius:20px}.piece{background-size:500% 500%;opacity:.08;filter:grayscale(1)}.piece.on{opacity:1;filter:none}.resultCard{text-align:center}.celebrate{font-size:62px}@media(max-width:900px){.homeGrid{grid-template-columns:1fr}.groupGrid{grid-template-columns:repeat(3,1fr)}.quizLayout{grid-template-columns:minmax(0,1fr) 34%;}.handCanvas{width:200px}.handCanvas.answerWide{width:280px}}@media(max-width:700px){.quizView{height:auto;overflow:visible}.quizLayout{display:block;height:auto}.questionPanel{height:auto;min-height:calc(100vh - 120px)}.scratchCard{height:260px;margin-top:8px}.prompt{max-height:none}.options{max-height:none}.groupGrid{grid-template-columns:repeat(2,1fr)}.keypad{grid-template-columns:repeat(3,1fr)}.handCanvas,.handCanvas.answerWide{width:min(82vw,360px);height:115px}}
+/* v3.1 手書き改善 */
+.canvasWrap{gap:14px;align-items:flex-start}
+.handAnswerGroup{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.handSlot{gap:5px}
+.handCanvas{width:320px;height:170px;border-width:4px;background:#fff}
+.handCanvas.answerWide{width:420px;height:170px}
+.handCanvas.numberCanvas{width:230px;height:180px}
+.handCanvas.unitCanvas{width:150px;height:180px}
+.eraseInk{min-height:38px;padding:6px 12px;background:#fff0ed;color:#8b3328;border:2px solid #eab5ad}
+.handHint{font-size:12px;color:#66766f;margin-top:2px}
+@media(max-width:900px){
+  .handCanvas{width:280px;height:160px}
+  .handCanvas.answerWide{width:350px}
+  .handCanvas.numberCanvas{width:210px;height:165px}
+  .handCanvas.unitCanvas{width:135px;height:165px}
+}
+@media(max-width:700px){
+  .handCanvas,.handCanvas.answerWide,.handCanvas.numberCanvas,.handCanvas.unitCanvas{width:min(84vw,360px);height:155px}
+}
+
+/* v3.3 手書き欄を縦方向にも大型化 */
+.handCanvas{height:230px}
+.handCanvas.answerWide{height:230px}
+.handCanvas.numberCanvas{height:240px}
+.handCanvas.unitCanvas{height:240px}
+
+@media(max-width:900px){
+  .handCanvas{height:210px}
+  .handCanvas.answerWide{height:210px}
+  .handCanvas.numberCanvas{height:220px}
+  .handCanvas.unitCanvas{height:220px}
+}
+@media(max-width:700px){
+  .handCanvas,.handCanvas.answerWide,.handCanvas.numberCanvas,.handCanvas.unitCanvas{
+    height:200px;
+  }
+}

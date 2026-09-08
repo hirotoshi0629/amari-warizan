@@ -1,0 +1,10 @@
+{
+  "version": "v3.1 HANDWRITING FIX",
+  "erase_buttons": true,
+  "large_number_boxes": true,
+  "separate_unit_boxes": true,
+  "digit_ocr_ensemble": true,
+  "unreadable_not_wrong": true,
+  "js_syntax_ok": true,
+  "js_error": ""
+}
