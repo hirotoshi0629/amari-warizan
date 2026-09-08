@@ -1,0 +1,12 @@
+{
+  "version": "v4.0 KEYPAD ONLY",
+  "question_count": 2000,
+  "handwriting_ui_removed": true,
+  "handwriting_ai_removed": true,
+  "keypad_kept": true,
+  "unit_required": true,
+  "scratch_space_kept": true,
+  "question_prompt_kept": true,
+  "js_syntax_ok": true,
+  "js_error": ""
+}

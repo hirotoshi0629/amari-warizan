@@ -54,3 +54,23 @@
     height:115px;
   }
 }
+
+/* v4.0 テンキー専用版 */
+.keypadOnlyNote{font-size:16px;font-weight:800;margin:4px 0}
+.keypad{
+  grid-template-columns:repeat(6,64px);
+  gap:7px;
+  justify-content:flex-start;
+}
+.keypad button{
+  min-height:48px;
+  font-size:22px;
+}
+.answerBox{margin-top:10px}
+.numDisplay{min-width:150px}
+@media(max-width:900px){
+  .keypad{grid-template-columns:repeat(6,58px)}
+}
+@media(max-width:700px){
+  .keypad{grid-template-columns:repeat(3,1fr);width:100%}
+}
