@@ -1,0 +1,7 @@
+{
+  "version": "v4.3 CHOICE PARENTHESES",
+  "choice_display": "（ア）（イ）（ウ）（エ）形式",
+  "answer_example": "答え：（イ）6",
+  "question_count": 2000,
+  "js_syntax_ok": true
+}

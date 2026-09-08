@@ -1,0 +1,13 @@
+{
+  "version": "v4.2 CHOICE CLARITY",
+  "question_count": 2000,
+  "ambiguous_remainder_questions_fixed": 60,
+  "ambiguous_remainder_questions_left": 0,
+  "choice_labels_katakana": true,
+  "answer_shows_kana_and_content": true,
+  "choice_answer_indices_valid": true,
+  "puzzle_gallery_kept": true,
+  "keypad_only": true,
+  "js_syntax_ok": true,
+  "js_error": ""
+}

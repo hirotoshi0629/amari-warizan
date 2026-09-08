@@ -93,3 +93,6 @@
   .currentPuzzleBox{grid-template-columns:1fr}
   .puzzleGallery{grid-template-columns:repeat(2,1fr)}
 }
+
+/* v4.2 選択肢をア・イ・ウ・エ表示 */
+.option b{display:inline-block;min-width:1.8em;font-size:1.05em}

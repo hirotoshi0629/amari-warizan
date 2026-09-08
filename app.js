@@ -4,8 +4,17 @@ const state=JSON.parse(localStorage.getItem("amariPuzzleState")||'{"pieces":0,"w
 function save(){localStorage.setItem("amariPuzzleState",JSON.stringify(state))}function show(v){views.forEach(x=>$("#"+x).classList.toggle("hidden",x!==v));$("#homeBtn").classList.toggle("hidden",v==="home")}function sh(a){return[...a].sort(()=>Math.random()-.5)}function pick(a,n){return sh(a).slice(0,n)}
 function makeSet(){if(selectedGroup!=="ミックス"){set=pick(bank.filter(q=>q.group===selectedGroup),10);return}set=sh([...pick(bank.filter(q=>["計算","あまりの意味","確かめ"].includes(q.category)),4),...pick(bank.filter(q=>["文章・基本","あまりを答える","切り上げ","切り捨て"].includes(q.category)),3),...pick(bank.filter(q=>["誤答発見","図・表・会話","思考・判断"].includes(q.category)),3)])}
 function word(q){return !["計算","あまりの意味","確かめ"].includes(q.category)}
+function choiceKana(i){return ["ア","イ","ウ","エ","オ","カ"][i]||String(i+1)}
+function cleanChoiceText(x){
+  return String(x).replace(/^\s*(?:[1-9][0-9]*[\.．、)]|[アイウエオカ][\.．、)]?)\s*/,"");
+}
+function choiceAnswerText(q){
+  const i=(q.answer?.value||1)-1;
+  const body=cleanChoiceText((q.options||[])[i]??"");
+  return `（${choiceKana(i)}）${body}`;
+}
 function start(){makeSet();idx=0;score=0;show("quiz");render()}
-function render(){typed={q:"",r:"",value:""};selectedUnits={q:"",r:"",value:""};selectedChoice=null;let q=set[idx];$("#qCount").textContent=`${idx+1} / 10`;$("#catBadge").textContent=q.category;$("#barFill").style.width=`${(idx+1)*10}%`;$("#prompt").textContent=q.prompt;$("#feedback").className="feedback hidden";$("#aiStatus").className="aiStatus hidden";$("#nextBtn").classList.add("hidden");$("#checkBtn").classList.remove("hidden");$("#showAnswerBtn").classList.remove("hidden");$("#options").innerHTML=(q.options||[]).map((x,i)=>`<button class="option" data-v="${i+1}">${x}</button>`).join("");document.querySelectorAll(".option").forEach(b=>b.onclick=()=>{selectedChoice=+b.dataset.v;typed.value=b.dataset.v;document.querySelectorAll(".option").forEach(x=>x.classList.toggle("active",x===b))});answerUI(q);$("#scratchCard").classList.toggle("hidden",!word(q));if(word(q))scratch()}
+function render(){typed={q:"",r:"",value:""};selectedUnits={q:"",r:"",value:""};selectedChoice=null;let q=set[idx];$("#qCount").textContent=`${idx+1} / 10`;$("#catBadge").textContent=q.category;$("#barFill").style.width=`${(idx+1)*10}%`;$("#prompt").textContent=q.prompt;$("#feedback").className="feedback hidden";$("#aiStatus").className="aiStatus hidden";$("#nextBtn").classList.add("hidden");$("#checkBtn").classList.remove("hidden");$("#showAnswerBtn").classList.remove("hidden");$("#options").innerHTML=(q.options||[]).map((x,i)=>`<button class="option" data-v="${i+1}"><b>（${choiceKana(i)}）</b>　${cleanChoiceText(x)}</button>`).join("");document.querySelectorAll(".option").forEach(b=>b.onclick=()=>{selectedChoice=+b.dataset.v;typed.value=b.dataset.v;document.querySelectorAll(".option").forEach(x=>x.classList.toggle("active",x===b))});answerUI(q);$("#scratchCard").classList.toggle("hidden",!word(q));if(word(q))scratch()}
 function needsUnits(q){return !!(q.unit||q.qUnit||q.rUnit)}
 function unitButtons(unit,key){if(!unit)return"";return `<div class="unitPicker"><button type="button" class="unitBtn" data-unit-key="${key}" data-unit="${unit}">${unit}</button></div>`}
 function answerUI(q){
@@ -32,7 +41,7 @@ function key(k,q){let f=q.format==="qr"?(typed.q===""?"q":"r"):"value";if(k==="C
 function update(){if($("#dq"))$("#dq").textContent=typed.q+(selectedUnits.q?" "+selectedUnits.q:"");if($("#dr"))$("#dr").textContent=typed.r+(selectedUnits.r?" "+selectedUnits.r:"");if($("#dv"))$("#dv").textContent=typed.value+(selectedUnits.value?" "+selectedUnits.value:"")}
 function draw(c){let x=c.getContext("2d"),on=false;x.lineWidth=11;x.lineCap="round";x.strokeStyle="#173229";let p=e=>{let r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};c.onpointerdown=e=>{on=true;c.setPointerCapture?.(e.pointerId);let[a,b]=p(e);x.beginPath();x.moveTo(a,b)};c.onpointermove=e=>{if(!on)return;let[a,b]=p(e);x.lineTo(a,b);x.stroke()};c.onpointerup=()=>on=false;c.onpointercancel=()=>on=false}
 function scratch(){let c=$("#scratchCanvas"),x=c.getContext("2d");x.clearRect(0,0,c.width,c.height);draw(c);$("#clearScratch").onclick=()=>x.clearRect(0,0,c.width,c.height)}
-function at(q){if(q.format==="qr")return `${q.answer.q}${q.qUnit||""} あまり ${q.answer.r}${q.rUnit||""}`;return `${q.answer.value}${q.unit||""}`}
+function at(q){if(q.format==="choice")return choiceAnswerText(q);if(q.format==="qr")return `${q.answer.q}${q.qUnit||""} あまり ${q.answer.r}${q.rUnit||""}`;return `${q.answer.value}${q.unit||""}`}
 function normalizeUnitText(t){return (t||"").replace(/\s/g,"").replace(/[個箇ケ]/g,"こ").replace(/枚/g,"まい").replace(/袋/g,"ふくろ").replace(/艘/g,"そう").replace(/センチメートル|センチ/g,"cm").replace(/[Ｃｃ][Ｍｍ]/g,"cm").replace(/臺/g,"台").replace(/[マま][イぃ]/g,"まい").replace(/本ほん/g,"本")}
 function parseAiText(text,unit){let t=normalizeUnitText(text);let m=t.match(/[0-9０-９]+/);let num=m?Number(m[0].replace(/[０-９]/g,ch=>"０１２３４５６７８９".indexOf(ch))):NaN;let hasUnit=!unit||t.includes(normalizeUnitText(unit));return{num,hasUnit,text:t}}
 
@@ -138,7 +147,7 @@ $("#homeBtn").onclick=()=>{
 $("#resultPuzzleBtn").onclick=()=>{puzzle();show("puzzle")};
 $("#puzzleHome").onclick=()=>show("home");
 $("#resultHomeBtn").onclick=()=>show("home");
-fetch("questions.json?v=4.1")
+fetch("questions.json?v=4.2")
   .then(r=>r.json())
   .then(d=>{bank=d.questions;puzzle()})
   .catch(()=>alert("問題データを読み込めませんでした。"));
