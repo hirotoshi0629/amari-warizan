@@ -1,0 +1,15 @@
+{
+  "version": "v3 AI AUTO JUDGE",
+  "question_count": 2000,
+  "questions_with_unit_metadata": 800,
+  "word_or_thinking_questions": 1240,
+  "ai_ocr": "Tesseract.js jpn+eng",
+  "child_self_judgement_removed": true,
+  "unit_required_in_keypad": true,
+  "unit_required_in_hand_ai": true,
+  "wide_hand_answer": true,
+  "single_view_desktop": true,
+  "scratch_space": true,
+  "js_syntax_ok": true,
+  "js_error": ""
+}
