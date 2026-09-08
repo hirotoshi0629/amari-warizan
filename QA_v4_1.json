@@ -1,0 +1,10 @@
+{
+  "version": "v4.1 PUZZLE GALLERY",
+  "question_count": 2000,
+  "puzzle_button": true,
+  "gallery_section": true,
+  "completed_puzzles_logic": true,
+  "keypad_only": true,
+  "js_syntax_ok": true,
+  "js_error": ""
+}

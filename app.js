@@ -63,12 +63,71 @@ function check(){
 function fb(q,ok){if(ok)score++;let f=$("#feedback");f.className="feedback "+(ok?"ok":"ng");f.innerHTML=(ok?"⭕ せいかい！<br>":"△ ちがいます。答え：<b>"+at(q)+"</b><br>")+q.explanation;$("#checkBtn").classList.add("hidden");$("#showAnswerBtn").classList.add("hidden");$("#nextBtn").classList.remove("hidden")}
 function showAnswer(){let q=set[idx],f=$("#feedback");f.className="feedback answer";f.innerHTML=`💡 答え：<b>${at(q)}</b><br>${q.explanation}`;$("#checkBtn").classList.add("hidden");$("#showAnswerBtn").classList.add("hidden");$("#nextBtn").classList.remove("hidden")}
 function next(){if(++idx<10)render();else finish()}function finish(){let e=2+Math.floor(score/2);state.pieces+=e;while(state.pieces>=25*(state.world+1))state.world++;save();$("#scoreText").textContent=`${score} / 10 問 せいかい`;$("#pieceEarned").textContent=`${e}ピース GET！`;puzzle();show("result")}
-function puzzle(){let local=state.pieces%25,bg=`linear-gradient(135deg,hsl(${(state.world*73)%360} 70% 80%),hsl(${(state.world*73+110)%360} 70% 65%))`;$("#worldTitle").textContent=themes[state.world%themes.length]+"・"+(state.world+1);$("#totalPieces").textContent=state.pieces;$("#pieceText").textContent="ピース "+state.pieces;$("#miniPuzzle").style.background=bg;let box=$("#jigsaw");box.innerHTML="";for(let i=0;i<25;i++){let p=document.createElement("div");p.className="piece"+(i<local?" on":"");p.style.background=bg;box.appendChild(p)}$("#puzzleStatus").textContent=`この絵は ${local} / 25 ピース。`}
+function puzzle(){
+  const local=state.pieces%25;
+  const bg=`linear-gradient(135deg,hsl(${(state.world*73)%360} 70% 80%),hsl(${(state.world*73+110)%360} 70% 65%))`;
+  $("#worldTitle").textContent=themes[state.world%themes.length]+"・"+(state.world+1);
+  $("#totalPieces").textContent=state.pieces;
+  $("#pieceText").textContent="ピース "+state.pieces;
+  $("#miniPuzzle").style.background=bg;
+
+  const box=$("#jigsaw");
+  box.innerHTML="";
+  for(let i=0;i<25;i++){
+    const p=document.createElement("div");
+    p.className="piece"+(i<local?" on":"");
+    p.style.background=bg;
+    box.appendChild(p);
+  }
+  $("#puzzleStatus").textContent=`この絵は ${local} / 25 ピース。`;
+
+  renderPuzzleGallery();
+}
+function renderPuzzleGallery(){
+  const gallery=$("#puzzleGallery");
+  if(!gallery)return;
+  gallery.innerHTML="";
+
+  const completed=Math.floor(state.pieces/25);
+  $("#emptyGallery")?.classList.toggle("hidden",completed>0);
+
+  for(let w=0;w<completed;w++){
+    const item=document.createElement("div");
+    item.className="galleryItem";
+
+    const thumb=document.createElement("div");
+    thumb.className="galleryThumb";
+    const bg=`linear-gradient(135deg,hsl(${(w*73)%360} 70% 80%),hsl(${(w*73+110)%360} 70% 65%))`;
+
+    for(let i=0;i<25;i++){
+      const p=document.createElement("div");
+      p.className="galleryPiece";
+      p.style.background=bg;
+      thumb.appendChild(p);
+    }
+
+    const meta=document.createElement("div");
+    meta.className="galleryMeta";
+    const name=document.createElement("div");
+    name.className="galleryName";
+    name.textContent=themes[w%themes.length]+"・"+(w+1);
+    const badge=document.createElement("div");
+    badge.className="galleryBadge";
+    badge.textContent="完成！";
+
+    meta.appendChild(name);
+    meta.appendChild(badge);
+    item.appendChild(thumb);
+    item.appendChild(meta);
+    gallery.appendChild(item);
+  }
+}
 document.querySelectorAll(".groupBtn").forEach(b=>b.onclick=()=>{
   selectedGroup=b.dataset.group;
   document.querySelectorAll(".groupBtn").forEach(x=>x.classList.toggle("selected",x===b));
 });
 $("#startBtn").onclick=start;
+$("#puzzleBtn").onclick=()=>{puzzle();show("puzzle")};
 $("#checkBtn").onclick=check;
 $("#showAnswerBtn").onclick=showAnswer;
 $("#nextBtn").onclick=next;
@@ -79,7 +138,7 @@ $("#homeBtn").onclick=()=>{
 $("#resultPuzzleBtn").onclick=()=>{puzzle();show("puzzle")};
 $("#puzzleHome").onclick=()=>show("home");
 $("#resultHomeBtn").onclick=()=>show("home");
-fetch("questions.json?v=4.0")
+fetch("questions.json?v=4.1")
   .then(r=>r.json())
   .then(d=>{bank=d.questions;puzzle()})
   .catch(()=>alert("問題データを読み込めませんでした。"));

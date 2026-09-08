@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>あまり探検！わり算パズル</title>
-<link rel="stylesheet" href="styles.css?v=4.0">
+<link rel="stylesheet" href="styles.css?v=4.1">
 </head>
 <body>
 <header class="top"><b>🧩 あまり探検！わり算パズル</b><button id="homeBtn" class="ghost hidden">🏠 ホームへ</button></header>
@@ -35,7 +35,7 @@
         <h2>② 答え方</h2>
         <p class="note keypadOnlyNote">🔢 答えはテンキーで入力します。文章問題は単位まで答えます。</p>
       </div>
-      <button id="startBtn" class="primary bigBtn">この問題で10問スタート！</button>
+      <button id="startBtn" class="primary bigBtn">この問題で10問スタート！</button><button id="puzzleBtn" class="secondary bigBtn">🧩 パズルを見る</button>
     </div>
   </div>
 </section>
@@ -66,8 +66,31 @@
   </div>
 </section>
 
-<section id="puzzle" class="view hidden"><div class="card"><h2 id="worldTitle"></h2><b><span id="totalPieces">0</span> ピース</b><div id="jigsaw" class="jigsaw"></div><p id="puzzleStatus"></p><button id="puzzleHome" class="primary">ホームへ戻る</button></div></section>
+<section id="puzzle" class="view hidden">
+      <div class="card">
+        <div class="galleryHeader">
+          <div>
+            <p class="eyebrow">パズルコレクション</p>
+            <h2>🧩 これまでのパズル</h2>
+          </div>
+          <button id="puzzleHome" class="ghost">🏠 ホームへ</button>
+        </div>
+
+        <div class="currentPuzzleBox">
+          <div>
+            <h3 id="worldTitle"></h3>
+            <p><b><span id="totalPieces">0</span> ピース</b></p>
+            <p id="puzzleStatus" class="note"></p>
+          </div>
+          <div id="jigsaw" class="jigsaw"></div>
+        </div>
+
+        <h3 class="galleryTitle">完成したパズル</h3>
+        <div id="puzzleGallery" class="puzzleGallery"></div>
+        <p id="emptyGallery" class="note hidden">まだ完成したパズルはありません。問題を解いてピースを集めよう！</p>
+      </div>
+    </section>
 <section id="result" class="view hidden"><div class="card resultCard"><div class="celebrate">🎉</div><h2>10問 おつかれさま！</h2><p id="scoreText"></p><p id="pieceEarned"></p><button id="againBtn" class="primary">同じ種類でもう10問</button> <button id="resultPuzzleBtn" class="secondary">🧩 ジグソーを見る</button> <button id="resultHomeBtn" class="ghost">ホームへ</button></div></section>
 </main>
-<script src="app.js?v=4.0"></script>
+<script src="app.js?v=4.1"></script>
 </body></html>

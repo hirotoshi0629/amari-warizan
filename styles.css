@@ -74,3 +74,22 @@
 @media(max-width:700px){
   .keypad{grid-template-columns:repeat(3,1fr);width:100%}
 }
+
+/* v4.1 パズルコレクション */
+.galleryHeader{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+.currentPuzzleBox{display:grid;grid-template-columns:.8fr 1.2fr;gap:20px;align-items:center;background:#f7fbf8;border-radius:18px;padding:16px;margin-bottom:18px}
+.galleryTitle{margin:18px 0 10px}
+.puzzleGallery{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.galleryItem{background:#fff;border:2px solid #dfeae4;border-radius:16px;padding:10px;box-shadow:0 4px 12px #0000000a}
+.galleryThumb{aspect-ratio:1;border-radius:12px;overflow:hidden;display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);margin-bottom:8px}
+.galleryPiece{border:1px solid #ffffff88}
+.galleryMeta{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13px}
+.galleryName{font-weight:900}
+.galleryBadge{background:#e7f5ef;color:#0b6e57;border-radius:999px;padding:3px 8px;font-size:11px}
+@media(max-width:900px){
+  .puzzleGallery{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:700px){
+  .currentPuzzleBox{grid-template-columns:1fr}
+  .puzzleGallery{grid-template-columns:repeat(2,1fr)}
+}
