@@ -1,4 +1,4 @@
-let bank=[],mode="keypad",selectedGroup="ミックス",set=[],idx=0,score=0,typed={q:"",r:"",value:""},selectedChoice=null,selectedUnits={q:"",r:"",value:""};
+let bank=[],digitModel=null,mode="keypad",selectedGroup="ミックス",set=[],idx=0,score=0,typed={q:"",r:"",value:""},selectedChoice=null,selectedUnits={q:"",r:"",value:""};
 const $=s=>document.querySelector(s),views=["home","quiz","puzzle","result"];
 const state=JSON.parse(localStorage.getItem("amariPuzzleState")||'{"pieces":0,"world":0}'),themes=["森のひみつ","海のたんけん","宇宙ステーション","恐竜の谷","おかしの国","空の王国"];
 function save(){localStorage.setItem("amariPuzzleState",JSON.stringify(state))}function show(v){views.forEach(x=>$("#"+x).classList.toggle("hidden",x!==v));$("#homeBtn").classList.toggle("hidden",v==="home")}function sh(a){return[...a].sort(()=>Math.random()-.5)}function pick(a,n){return sh(a).slice(0,n)}
@@ -64,16 +64,72 @@ async function ocrOnce(canvas,lang,params){
   const r=await Tesseract.recognize(canvas,lang,{...params,logger:m=>{if(m.status==="recognizing text")$("#aiStatus").textContent=`🤖 AIが答えを読んでいます… ${Math.round((m.progress||0)*100)}%`}});
   return {text:r.data.text||"",confidence:r.data.confidence||0};
 }
+function cropInk(canvas){
+  const ctx=canvas.getContext("2d"), im=ctx.getImageData(0,0,canvas.width,canvas.height), d=im.data;
+  let minX=canvas.width,minY=canvas.height,maxX=-1,maxY=-1;
+  for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++){
+    const i=(y*canvas.width+x)*4;
+    const g=(d[i]+d[i+1]+d[i+2])/3;
+    if(g<210){ if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y; }
+  }
+  if(maxX<minX||maxY<minY)return null;
+  const pad=Math.max(12,Math.round(Math.max(maxX-minX,maxY-minY)*0.12));
+  minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);maxX=Math.min(canvas.width-1,maxX+pad);maxY=Math.min(canvas.height-1,maxY+pad);
+  return {x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1};
+}
+function digitVector(canvas){
+  const box=cropInk(canvas); if(!box)return null;
+  const tmp=document.createElement("canvas"); tmp.width=28;tmp.height=28;
+  const x=tmp.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,28,28);
+  const scale=Math.min(20/box.w,20/box.h),w=box.w*scale,h=box.h*scale,dx=(28-w)/2,dy=(28-h)/2;
+  x.drawImage(canvas,box.x,box.y,box.w,box.h,dx,dy,w,h);
+
+  // Center the ink by center of mass.
+  let im=x.getImageData(0,0,28,28),d=im.data,sx=0,sy=0,sw=0;
+  for(let yy=0;yy<28;yy++)for(let xx=0;xx<28;xx++){
+    let i=(yy*28+xx)*4,v=255-(d[i]+d[i+1]+d[i+2])/3;
+    if(v>20){sx+=xx*v;sy+=yy*v;sw+=v}
+  }
+  if(sw>0){
+    const cx=sx/sw,cy=sy/sw,ox=Math.round(13.5-cx),oy=Math.round(13.5-cy);
+    const moved=document.createElement("canvas");moved.width=28;moved.height=28;
+    const m=moved.getContext("2d");m.fillStyle="#fff";m.fillRect(0,0,28,28);m.drawImage(tmp,ox,oy);
+    im=m.getImageData(0,0,28,28);d=im.data;
+  }
+
+  // Downsample to 8x8, matching the reference model.
+  const vec=[];
+  for(let gy=0;gy<8;gy++)for(let gx=0;gx<8;gx++){
+    let sum=0,count=0;
+    const x0=Math.floor(gx*28/8),x1=Math.floor((gx+1)*28/8);
+    const y0=Math.floor(gy*28/8),y1=Math.floor((gy+1)*28/8);
+    for(let yy=y0;yy<y1;yy++)for(let xx=x0;xx<x1;xx++){
+      const i=(yy*28+xx)*4;
+      sum+=255-(d[i]+d[i+1]+d[i+2])/3;count++;
+    }
+    vec.push(count?sum/count:0);
+  }
+  return vec;
+}
+function classifyDigitVector(vec){
+  if(!vec||!digitModel)return {text:"",confidence:0,candidates:[]};
+  const best=[];
+  for(let i=0;i<digitModel.samples.length;i++){
+    const ref=digitModel.samples[i];let dist=0;
+    for(let j=0;j<64;j++){const z=vec[j]-ref[j];dist+=z*z}
+    if(best.length<9){best.push([dist,digitModel.labels[i]]);best.sort((a,b)=>a[0]-b[0])}
+    else if(dist<best[8][0]){best[8]=[dist,digitModel.labels[i]];best.sort((a,b)=>a[0]-b[0])}
+  }
+  const votes=new Map();
+  for(const [dist,label] of best){const w=1/(Math.sqrt(dist)+1);votes.set(label,(votes.get(label)||0)+w)}
+  const ranked=[...votes.entries()].sort((a,b)=>b[1]-a[1]);
+  const total=ranked.reduce((a,b)=>a+b[1],0)||1;
+  const conf=Math.round(100*ranked[0][1]/total);
+  return {text:String(ranked[0][0]),confidence:conf,candidates:ranked.slice(0,3).map(([d,w])=>[d,Math.round(100*w/total)])};
+}
 async function aiReadNumber(canvas){
-  if(!window.Tesseract)throw new Error("AI読取ライブラリを読み込めません");
-  const tests=[
-    [preparedCanvas(canvas,2,190),"eng",{tessedit_char_whitelist:"0123456789",tessedit_pageseg_mode:"10"}],
-    [preparedCanvas(canvas,2,215),"eng",{tessedit_char_whitelist:"0123456789",tessedit_pageseg_mode:"10"}],
-    [preparedCanvas(canvas,3,205),"eng",{tessedit_char_whitelist:"0123456789",tessedit_pageseg_mode:"7"}]
-  ];
-  let best={text:"",confidence:0};
-  for(const [c,l,p] of tests){const r=await ocrOnce(c,l,p);if(r.confidence>best.confidence)best=r}
-  return best;
+  const vec=digitVector(canvas);
+  return classifyDigitVector(vec);
 }
 async function aiReadUnit(canvas){
   if(!window.Tesseract)throw new Error("AI読取ライブラリを読み込めません");
@@ -119,7 +175,7 @@ async function aiCheck(q){
 
     // 数字が読めない場合は「不正解」にしない。
     const unreadableNumberKeys=Object.entries(results)
-      .filter(([key,x])=>!Number.isFinite(x.num)||x.numConf<18)
+      .filter(([key,x])=>!Number.isFinite(x.num)||x.numConf<34)
       .map(([key])=>key);
     if(unreadableNumberKeys.length){
       const label=k=>q.format==="qr"?(k==="q"?"商の数字":"あまりの数字"):"答えの数字";
@@ -182,4 +238,7 @@ function showAnswer(){let q=set[idx],f=$("#feedback");f.className="feedback answ
 function next(){if(++idx<10)render();else finish()}function finish(){let e=2+Math.floor(score/2);state.pieces+=e;while(state.pieces>=25*(state.world+1))state.world++;save();$("#scoreText").textContent=`${score} / 10 問 せいかい`;$("#pieceEarned").textContent=`${e}ピース GET！`;puzzle();show("result")}
 function puzzle(){let local=state.pieces%25,bg=`linear-gradient(135deg,hsl(${(state.world*73)%360} 70% 80%),hsl(${(state.world*73+110)%360} 70% 65%))`;$("#worldTitle").textContent=themes[state.world%themes.length]+"・"+(state.world+1);$("#totalPieces").textContent=state.pieces;$("#pieceText").textContent="ピース "+state.pieces;$("#miniPuzzle").style.background=bg;let box=$("#jigsaw");box.innerHTML="";for(let i=0;i<25;i++){let p=document.createElement("div");p.className="piece"+(i<local?" on":"");p.style.background=bg;box.appendChild(p)}$("#puzzleStatus").textContent=`この絵は ${local} / 25 ピース。`}
 document.querySelectorAll(".groupBtn").forEach(b=>b.onclick=()=>{selectedGroup=b.dataset.group;document.querySelectorAll(".groupBtn").forEach(x=>x.classList.toggle("selected",x===b))});document.querySelectorAll(".modeBtn").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll(".modeBtn").forEach(x=>x.classList.toggle("selected",x===b));$("#modeNote").textContent=mode==="keypad"?"テンキーでも、文章問題は単位まで答えます。":"書いた答えをAIが読み取って、自動で○×判定します。"});
-$("#startBtn").onclick=start;$("#checkBtn").onclick=check;$("#showAnswerBtn").onclick=showAnswer;$("#nextBtn").onclick=next;$("#againBtn").onclick=start;$("#homeBtn").onclick=()=>{if($("#quiz").classList.contains("hidden")||confirm("この10問を途中でやめてホームに戻りますか？"))show("home")};$("#resultPuzzleBtn").onclick=()=>{puzzle();show("puzzle")};$("#puzzleHome").onclick=()=>show("home");$("#resultHomeBtn").onclick=()=>show("home");fetch("questions.json?v=3").then(r=>r.json()).then(d=>{bank=d.questions;puzzle()}).catch(()=>alert("問題データを読み込めませんでした。"));
+$("#startBtn").onclick=start;$("#checkBtn").onclick=check;$("#showAnswerBtn").onclick=showAnswer;$("#nextBtn").onclick=next;$("#againBtn").onclick=start;$("#homeBtn").onclick=()=>{if($("#quiz").classList.contains("hidden")||confirm("この10問を途中でやめてホームに戻りますか？"))show("home")};$("#resultPuzzleBtn").onclick=()=>{puzzle();show("puzzle")};$("#puzzleHome").onclick=()=>show("home");$("#resultHomeBtn").onclick=()=>show("home");Promise.all([
+  fetch("questions.json?v=3.5").then(r=>r.json()),
+  fetch("digit_model.json?v=1").then(r=>r.json())
+]).then(([d,m])=>{bank=d.questions;digitModel=m;puzzle()}).catch(()=>alert("問題データを読み込めませんでした。"));

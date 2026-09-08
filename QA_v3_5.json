@@ -1,0 +1,12 @@
+{
+  "version": "v3.5 DEDICATED DIGIT MODEL",
+  "question_count": 2000,
+  "digit_model_examples": 1797,
+  "digit_model_offline": true,
+  "digit_recognition_no_tesseract": true,
+  "unit_tesseract_kept": true,
+  "erase_buttons_kept": true,
+  "exact_unreadable_location_kept": true,
+  "js_syntax_ok": true,
+  "js_error": ""
+}
