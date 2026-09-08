@@ -147,7 +147,7 @@ $("#homeBtn").onclick=()=>{
 $("#resultPuzzleBtn").onclick=()=>{puzzle();show("puzzle")};
 $("#puzzleHome").onclick=()=>show("home");
 $("#resultHomeBtn").onclick=()=>show("home");
-fetch("questions.json?v=4.2")
+fetch("questions.json?v=4.4")
   .then(r=>r.json())
   .then(d=>{bank=d.questions;puzzle()})
   .catch(()=>alert("問題データを読み込めませんでした。"));
