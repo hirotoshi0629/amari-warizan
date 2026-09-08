@@ -1,0 +1,10 @@
+{
+  "version": "v3.4 READABILITY LABELS",
+  "js_syntax_ok": true,
+  "shows_exact_unreadable_number": true,
+  "shows_exact_unreadable_unit": true,
+  "unit_box_horizontal": true,
+  "v3.2_false_negative_fix_kept": true,
+  "erase_buttons_kept": true,
+  "js_error": ""
+}

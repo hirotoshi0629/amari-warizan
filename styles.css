@@ -36,3 +36,21 @@
     height:200px;
   }
 }
+
+/* v3.4 単位欄を横書きしやすく修正 */
+.handCanvas.unitCanvas{
+  width:230px;
+  height:130px;
+}
+@media(max-width:900px){
+  .handCanvas.unitCanvas{
+    width:210px;
+    height:120px;
+  }
+}
+@media(max-width:700px){
+  .handCanvas.unitCanvas{
+    width:min(72vw,300px);
+    height:115px;
+  }
+}

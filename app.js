@@ -118,11 +118,16 @@ async function aiCheck(q){
     }
 
     // 数字が読めない場合は「不正解」にしない。
-    const numberUnreadable=Object.values(results).some(x=>!Number.isFinite(x.num)||x.numConf<18);
-    if(numberUnreadable){
+    const unreadableNumberKeys=Object.entries(results)
+      .filter(([key,x])=>!Number.isFinite(x.num)||x.numConf<18)
+      .map(([key])=>key);
+    if(unreadableNumberKeys.length){
+      const label=k=>q.format==="qr"?(k==="q"?"商の数字":"あまりの数字"):"答えの数字";
+      const labels=unreadableNumberKeys.map(label);
+      const msg=labels.length===1?labels[0]:labels.slice(0,-1).join("、")+"と"+labels[labels.length-1];
       const f=$("#feedback");
       f.className="feedback answer";
-      f.innerHTML="🤖 数字をはっきり読めませんでした。<b>「消す」</b>で書き直して、数字をマスいっぱいに大きく書いてみてね。<br><small>AIが読めないだけなので、不正解にはしていません。</small>";
+      f.innerHTML=`🤖 <b>${msg}</b>をはっきり読めませんでした。該当するマスの<b>「消す」</b>で書き直して、数字をマスいっぱいに大きく書いてみてね。<br><small>AIが読めないだけなので、不正解にはしていません。</small>`;
       return;
     }
 
@@ -134,12 +139,18 @@ async function aiCheck(q){
     const confidentUnitWrong=Object.values(results).some(x=>x.unitConfidentWrong);
 
     // 単位OCRが曖昧なら、正しい数字を誤答にしない。単位だけ書き直し案内。
-    const unitAmbiguous=Object.values(results).some(x=>x.unitUnreadable && !x.unitExact);
+    const ambiguousUnitKeys=Object.entries(results)
+      .filter(([key,x])=>x.unitUnreadable && !x.unitExact)
+      .map(([key])=>key);
+    const unitAmbiguous=ambiguousUnitKeys.length>0;
 
     if(numberCorrect && unitAmbiguous && !confidentUnitWrong){
+      const unitLabel=k=>q.format==="qr"?(k==="q"?"商の単位":"あまりの単位"):"答えの単位";
+      const labels=ambiguousUnitKeys.map(unitLabel);
+      const msg=labels.length===1?labels[0]:labels.slice(0,-1).join("、")+"と"+labels[labels.length-1];
       const f=$("#feedback");
       f.className="feedback answer";
-      f.innerHTML="🤖 数字は正しく読めました。単位だけAIがはっきり読めませんでした。<b>単位のマスだけ</b>書き直して、もう一度「こたえあわせ」を押してね。<br><small>数字は正解なので、不正解にはしていません。</small>";
+      f.innerHTML=`🤖 数字は正しく読めました。<b>${msg}</b>だけAIがはっきり読めませんでした。該当する単位のマスだけ書き直して、もう一度「こたえあわせ」を押してね。<br><small>数字は正解なので、不正解にはしていません。</small>`;
       return;
     }
 
