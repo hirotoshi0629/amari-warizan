@@ -1,0 +1,20 @@
+{
+  "count": 2000,
+  "categories": {
+    "計算": 400,
+    "あまりの意味": 180,
+    "確かめ": 180,
+    "文章・基本": 300,
+    "あまりを答える": 160,
+    "切り上げ": 180,
+    "切り捨て": 160,
+    "誤答発見": 120,
+    "図・表・会話": 120,
+    "思考・判断": 200
+  },
+  "answer_reveal": true,
+  "home_mid_quiz": true,
+  "handwriting_mode": true,
+  "keypad_mode": true,
+  "jigsaw": true
+}
